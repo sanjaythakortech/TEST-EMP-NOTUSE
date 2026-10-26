@@ -1,0 +1,46 @@
+{% extends 'base.html' %}{% block title %}My Dashboard · OfficeFlow{% endblock %}{% block heading %}My Dashboard{%
+endblock %}{% block content %}
+<div class="welcome">
+    <div><span class="eyebrow">MY WORKSPACE</span>
+        <h2>Welcome, {{ current_user.name.split()[0] }} </h2>
+        <p>Stay on top of your assigned work and deadlines.</p>
+    </div><a class="btn btn-primary" href="{{ url_for('employee_task_new') }}"><i class="bi bi-plus-lg"></i> Add
+        Task</a>
+</div>
+<div class="stats-grid four">
+    {% for icon,label,value,cls in [('bi-list-check','My
+    Tasks',total,'blue'),('bi-hourglass-split','Pending',pending,'amber'),('bi-arrow-repeat','In
+    Progress',in_progress,'purple'),('bi-check-circle','Completed',completed,'green')] %}<div class="stat-card">
+        <div class="stat-icon {{ cls }}"><i class="bi {{ icon }}"></i></div>
+        <div><span>{{ label }}</span><strong>{{ value }}</strong></div>
+    </div>{% endfor %}
+</div>
+<div class="section-head">
+    <div>
+        <h3>Recent tasks</h3>
+        <p>Quick view of your latest tasks.</p>
+    </div><a href="{{ url_for('employee_tasks') }}" class="link-arrow">View all <i class="bi bi-arrow-right"></i></a>
+</div>
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table task-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Due date</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>{% for task in recent %}<tr>
+                    <td><strong>{{ task.task_code }}</strong><span>{{ task.title }}</span></td>
+                    <td>{{ task.due_date.strftime('%d %b %Y') if task.due_date else '—' }}</td>
+                    <td><span class="status {{ task.status|lower|replace(' ','-') }}">{{ task.status }}</span></td>
+                    <td><span class="priority {{ task.priority|lower }}">{{ task.priority }}</span></td>
+                </tr>{% else %}<tr>
+                    <td colspan="4" class="empty">No tasks yet.</td>
+                </tr>{% endfor %}</tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

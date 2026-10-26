@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Setup required · OfficeFlow{% endblock %}
+{% block public_content %}
+<div class="login-page">
+  <div class="login-brand"><div class="brand-mark large"><i class="bi bi-tools"></i></div><div><strong>OfficeFlow</strong><span>Employee Task Management</span></div></div>
+  <div class="login-card">
+    <div class="login-head"><span class="eyebrow">SETUP REQUIRED</span><h1>A few settings are missing</h1><p>This deployment can't start until the items below are fixed.</p></div>
+    <div class="stack-form">
+      {% for error in errors %}
+      <div class="alert alert-danger app-alert" role="alert"><i class="bi bi-exclamation-triangle-fill"></i><span>{{ error }}</span></div>
+      {% endfor %}
+    </div>
+    <div class="login-note"><i class="bi bi-info-circle"></i><span>Add the missing variables in Vercel → Project → Settings → Environment Variables, then redeploy. See README.md for the full list.</span></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}{% endblock %}

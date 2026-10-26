@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f2147">
+  <title>{% block title %}OfficeFlow · Employee Task Management{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body>
+{% if current_user.is_authenticated %}
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand-block">
+      <div class="brand-mark"><i class="bi bi-check2-square"></i></div>
+      <div class="brand-copy"><strong>OfficeFlow</strong><span>Employee Workspace</span></div>
+    </div>
+    <div class="sidebar-caption">MAIN MENU</div>
+    <nav class="side-nav">
+      {% if current_user.role == 'admin' %}
+      <a href="{{ url_for('platform_dashboard') }}" class="nav-link {% if request.endpoint == 'platform_dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+      <a href="{{ url_for('platform_managers') }}" class="nav-link {% if request.endpoint in ['platform_managers','platform_manager_detail'] %}active{% endif %}"><i class="bi bi-person-workspace"></i><span>Managers</span>{% if pending_managers %}<em class="nav-badge">{{ pending_managers }}</em>{% endif %}</a>
+      <a href="{{ url_for('platform_settings') }}" class="nav-link {% if request.endpoint == 'platform_settings' %}active{% endif %}"><i class="bi bi-sliders2"></i><span>Settings</span></a>
+      {% elif current_user.role == 'manager' %}
+      <a href="{{ url_for('manager_dashboard') }}" class="nav-link {% if request.endpoint == 'manager_dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+      <a href="{{ url_for('manager_tasks') }}" class="nav-link {% if request.endpoint in ['manager_tasks','manager_task_new','manager_task_edit'] %}active{% endif %}"><i class="bi bi-list-check"></i><span>Tasks</span></a>
+      <a href="{{ url_for('manager_employees') }}" class="nav-link {% if request.endpoint in ['manager_employees','manager_employee_new','manager_employee_edit','manager_employee_password'] %}active{% endif %}"><i class="bi bi-people"></i><span>Employees</span></a>
+      <a href="{{ url_for('manager_reports') }}" class="nav-link {% if request.endpoint == 'manager_reports' %}active{% endif %}"><i class="bi bi-bar-chart-line"></i><span>Reports</span></a>
+      <a href="{{ url_for('manager_settings') }}" class="nav-link {% if request.endpoint == 'manager_settings' %}active{% endif %}"><i class="bi bi-sliders2"></i><span>Settings</span></a>
+      {% else %}
+      <a href="{{ url_for('employee_dashboard') }}" class="nav-link {% if request.endpoint == 'employee_dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+      <a href="{{ url_for('employee_tasks') }}" class="nav-link {% if request.endpoint in ['employee_tasks','employee_task_new','employee_task_edit'] %}active{% endif %}"><i class="bi bi-list-check"></i><span>My Tasks</span></a>
+      <a href="{{ url_for('employee_reports') }}" class="nav-link {% if request.endpoint == 'employee_reports' %}active{% endif %}"><i class="bi bi-bar-chart-line"></i><span>Reports</span></a>
+      <a href="{{ url_for('employee_settings') }}" class="nav-link {% if request.endpoint == 'employee_settings' %}active{% endif %}"><i class="bi bi-sliders2"></i><span>Settings</span></a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-caption secondary">ACCOUNT</div>
+    <nav class="side-nav">
+      <a href="{{ url_for('notifications') }}" class="nav-link {% if request.endpoint == 'notifications' %}active{% endif %}"><i class="bi bi-bell"></i><span>Notifications</span></a>
+      <a href="{{ url_for('profile') }}" class="nav-link {% if request.endpoint in ['profile','profile_password'] %}active{% endif %}"><i class="bi bi-person-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="side-bottom">
+      <div class="user-mini">
+        <div class="avatar">{{ current_user.name[:1]|upper }}</div>
+        <div class="min-w-0"><strong>{{ current_user.name }}</strong><span>{{ current_user.employee_id }} · {{ current_user.designation }}</span></div>
+      </div>
+      <form method="post" action="{{ url_for('auth_logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout-btn" type="submit"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button></form>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" onclick="toggleSidebar()"></div>
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu" type="button" onclick="toggleSidebar()" aria-label="Open menu"><i class="bi bi-list"></i></button>
+        <div><span class="eyebrow">{{ {'admin': 'ADMIN WORKSPACE', 'manager': 'MANAGER WORKSPACE'}.get(current_user.role, 'EMPLOYEE WORKSPACE') }}</span><h1>{% block heading %}Dashboard{% endblock %}</h1></div>
+      </div>
+      <div class="topbar-right">
+        <a class="top-icon" href="{{ url_for('notifications') }}" aria-label="Notifications"><i class="bi bi-bell"></i></a>
+        <div class="top-user"><div class="avatar small">{{ current_user.name[:1]|upper }}</div><div><strong>{{ current_user.name }}</strong><span>{{ current_user.role|capitalize }}</span></div></div>
+      </div>
+    </header>
+    <section class="page-content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}<div class="alert alert-{{ category }} alert-dismissible fade show app-alert{% if category=='warning' %} sticky{% endif %}" role="alert"><i class="bi {% if category=='success' %}bi-check-circle-fill{% elif category in ['danger','warning'] %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %}"></i><span>{{ message }}</span><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>{% endfor %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </section>
+  </main>
+</div>
+{% else %}{% block public_content %}{% endblock %}{% endif %}
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content" style="border:0;border-radius:16px"><div class="modal-body p-4"><h5 id="confirmTitle" class="mb-2">Are you sure?</h5><p id="confirmText" class="text-muted mb-0" style="font-size:13px"></p></div><div class="modal-footer border-0 pt-0"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn btn-danger" id="confirmOk">Confirm</button></div></div></div></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

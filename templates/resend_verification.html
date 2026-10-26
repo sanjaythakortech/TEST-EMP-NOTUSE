@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Resend verification · OfficeFlow{% endblock %}
+{% block public_content %}
+<div class="login-page">
+  <div class="login-brand"><div class="brand-mark large"><i class="bi bi-check2-square"></i></div><div><strong>OfficeFlow</strong><span>Employee Task Management</span></div></div>
+  <div class="login-card">
+    <div class="login-head"><span class="eyebrow">EMAIL VERIFICATION</span><h1>Resend verification email</h1><p>Enter your account email and we will send a new link.</p></div>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="alert alert-{{ category }} app-alert"><i class="bi bi-info-circle-fill"></i><span>{{ message }}</span></div>{% endfor %}{% endwith %}
+<form method="post" class="login-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><label>Email</label><div class="input-icon"><i class="bi bi-envelope"></i><input class="form-control" type="email" name="email" required autofocus placeholder="you@company.com" ></div><button class="btn btn-primary login-submit" type="submit"><i class="bi bi-send"></i> Send email</button></form><div class="auth-links center"><a href="{{ url_for('auth_login') }}">Back to sign in</a></div>
+  </div>
+</div>
+{% endblock %}

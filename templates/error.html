@@ -1,0 +1,1 @@
+{% extends 'base.html' %}{% block title %}{{ code }} · OfficeFlow{% endblock %}{% block heading %}Error {{ code }}{% endblock %}{% block content %}<div class="empty-card error-card"><div class="error-code">{{ code }}</div><h2>{{ message }}</h2><a class="btn btn-primary" href="{{ url_for('home') }}"><i class="bi bi-house"></i> Back to dashboard</a></div>{% endblock %}

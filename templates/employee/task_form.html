@@ -1,0 +1,39 @@
+{% extends 'base.html' %}{% block title %}{{ 'Edit' if task else 'Add' }} Task · OfficeFlow{% endblock %}{% block
+heading %}{{ 'Edit Task' if task else 'Add Task' }}{% endblock %}{% block content %}
+<div class="form-page">
+    <div class="form-card">
+        <div class="form-card-head">
+            <div><span class="eyebrow">MY TASK</span>
+                <h2>{{ 'Update your task' if task else 'Create your task' }}</h2>
+            </div>{% if task %}<span class="code-pill">{{ task.task_code }}</span>{% endif %}
+        </div>
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="return_search" value="{{ request.args.get('search','') }}">
+            <input type="hidden" name="return_status" value="{{ request.args.get('status','') }}">
+            <input type="hidden" name="return_priority" value="{{ request.args.get('priority','') }}">
+            <input type="hidden" name="return_sort" value="{{ request.args.get('sort','default') }}">
+            <input type="hidden" name="return_direction" value="{{ request.args.get('direction','asc') }}">
+            <div class="row g-3">
+                <div class="col-12"><label>Task title *</label><input class="form-control" name="title" required
+                        value="{{ task.title if task else '' }}" placeholder="What needs to be done?"></div>
+                <div class="col-12"><label>Description</label><textarea class="form-control" name="description" rows="5"
+                        placeholder="Add task details...">{{ task.description if task else '' }}</textarea></div>
+                <div class="col-md-3"><label>Start date</label><input class="form-control" type="date" name="start_date"
+                        value="{{ task.start_date.isoformat() if task and task.start_date else '' }}"></div>
+                <div class="col-md-3"><label>Due date</label><input class="form-control" type="date" name="due_date"
+                        value="{{ task.due_date.isoformat() if task and task.due_date else '' }}"></div>
+                <div class="col-md-3"><label>Status</label><select class="form-select" name="status">{% for x in
+                        status_options %}<option {{ 'selected' if task and task.status==x or not task and x=='Pending'
+                            }}>{{ x }}</option>{% endfor %}</select></div>
+                <div class="col-md-3"><label>Priority</label><select class="form-select" name="priority">{% for x in
+                        priority_options %}<option {{ 'selected' if task and task.priority==x or not task and
+                            x=='Medium' }}>{{ x }}</option>{% endfor %}</select></div>
+            </div>
+            <div class="form-actions"><a class="btn btn-light" href="{{ url_for('employee_tasks') }}">Cancel</a><button
+                    class="btn btn-primary"><i class="bi bi-check2"></i> {{ 'Save changes' if task else 'Create task'
+                    }}</button></div>
+        </form>
+    </div>
+</div>
+{% endblock %}

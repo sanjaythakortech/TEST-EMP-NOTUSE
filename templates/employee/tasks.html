@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% block title %}My Tasks · OfficeFlow{% endblock %}
+{% block heading %}My Tasks{% endblock %}
+{% block content %}
+<div class="section-head">
+    <div>
+        <h2>My tasks</h2>
+        <p>Manage your own tasks and update their status.</p>
+    </div>
+    <a class="btn btn-primary"
+       href="{{ url_for('employee_task_new',
+           search=request.args.get('search',''),
+           status=request.args.get('status',''),
+           priority=request.args.get('priority',''),
+           sort=request.args.get('sort','default'),
+           direction=request.args.get('direction','asc')) }}">
+        <i class="bi bi-plus-lg"></i> Add Task
+    </a>
+</div>
+
+<form class="filter-card" method="get">
+    <div class="filter-search">
+        <i class="bi bi-search"></i>
+        <input name="search"
+               value="{{ request.args.get('search','') }}"
+               placeholder="Search my tasks...">
+    </div>
+
+    <select name="status" class="form-select">
+        <option value="">All statuses</option>
+        {% for x in status_options %}
+        <option value="{{ x }}" {{ 'selected' if request.args.get('status') == x else '' }}>{{ x }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="priority" class="form-select">
+        <option value="">All priorities</option>
+        {% for x in priority_options %}
+        <option value="{{ x }}" {{ 'selected' if request.args.get('priority') == x else '' }}>{{ x }}</option>
+        {% endfor %}
+    </select>
+
+    <input type="hidden" name="sort" value="{{ request.args.get('sort','default') }}">
+    <input type="hidden" name="direction" value="{{ request.args.get('direction','asc') }}">
+
+    <button class="btn btn-primary" type="submit">
+        <i class="bi bi-funnel"></i> Filter
+    </button>
+
+    <a class="btn btn-light" href="{{ url_for('employee_tasks') }}">Reset</a>
+</form>
+
+<div class="d-flex justify-content-end align-items-center gap-2 mb-3">
+    <span class="text-muted">Sort Task ID:</span>
+
+    <a class="btn btn-sm {% if request.args.get('sort') == 'task_id' and request.args.get('direction') == 'asc' %}btn-primary{% else %}btn-light{% endif %}"
+       href="{{ url_for('employee_tasks',
+           search=request.args.get('search',''),
+           status=request.args.get('status',''),
+           priority=request.args.get('priority',''),
+           sort='task_id',
+           direction='asc') }}">
+        ↑ Ascending
+    </a>
+
+    <a class="btn btn-sm {% if request.args.get('sort') == 'task_id' and request.args.get('direction') == 'desc' %}btn-primary{% else %}btn-light{% endif %}"
+       href="{{ url_for('employee_tasks',
+           search=request.args.get('search',''),
+           status=request.args.get('status',''),
+           priority=request.args.get('priority',''),
+           sort='task_id',
+           direction='desc') }}">
+        ↓ Descending
+    </a>
+</div>
+
+<div class="table-card">
+    <div class="table-responsive">
+        <table class="table task-table align-middle">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Preview</th>
+                    <th>Dates</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for task in tasks %}
+                <tr>
+                    <td>
+                        <strong>{{ task.task_code }}</strong>
+                        <span>{{ task.title }}</span>
+                        {% if task.description %}
+                        <small>{{ task.description|truncate(70) }}</small>
+                        {% endif %}
+                    </td>
+
+
+
+   <td class="task-preview-cell">
+    <button type="button"
+            class="task-preview-btn"
+            data-bs-toggle="modal"
+            data-bs-target="#employeeTaskPreview{{ task.id }}">
+        <i class="bi bi-eye"></i>
+        Preview
+    </button>
+</td>
+
+
+
+                    
+                    <td>Due: {{ task.due_date.strftime('%d %b %Y') if task.due_date else '—' }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('employee_task_status', task_id=task.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="return_search" value="{{ request.args.get('search','') }}">
+                            <input type="hidden" name="return_status" value="{{ request.args.get('status','') }}">
+                            <input type="hidden" name="return_priority" value="{{ request.args.get('priority','') }}">
+                            <input type="hidden" name="return_sort" value="{{ request.args.get('sort','default') }}">
+                            <input type="hidden" name="return_direction" value="{{ request.args.get('direction','asc') }}">
+
+                            <select name="status" class="status-select" onchange="this.form.submit()">
+                                {% for x in status_options %}
+                                <option value="{{ x }}" {{ 'selected' if task.status == x else '' }}>{{ x }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </td>
+                    <td><span class="priority {{ task.priority|lower }}">{{ task.priority }}</span></td>
+                    <td class="text-end">
+                        <a class="icon-btn"
+                           title="Edit"
+                           href="{{ url_for('employee_task_edit',
+                               task_id=task.id,
+                               search=request.args.get('search',''),
+                               status=request.args.get('status',''),
+                               priority=request.args.get('priority',''),
+                               sort=request.args.get('sort','default'),
+                               direction=request.args.get('direction','asc')) }}">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" class="empty"><i class="bi bi-inbox"></i><br>No tasks found.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+{% for task in tasks %}
+<div class="modal fade"
+     id="employeeTaskPreview{{ task.id }}"
+     tabindex="-1"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content task-preview-modal">
+
+            <div class="modal-header">
+                <div>
+                    <span class="preview-task-code">{{ task.task_code }}</span>
+                    <h4 class="modal-title mt-1">{{ task.title }}</h4>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="task-preview-grid">
+
+                    <div class="preview-item">
+                        <span>Assigned To</span>
+                        <strong>{{ task.assignee.name }}</strong>
+                    </div>
+
+                    <div class="preview-item">
+                        <span>Assigned Date</span>
+                        <strong>
+                            {{ task.created_at.strftime('%d %b %Y, %I:%M %p')
+                               if task.created_at else '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="preview-item">
+                        <span>Start Date</span>
+                        <strong>
+                            {{ task.start_date.strftime('%d %b %Y')
+                               if task.start_date else '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="preview-item">
+                        <span>Due Date</span>
+                        <strong>
+                            {{ task.due_date.strftime('%d %b %Y')
+                               if task.due_date else '—' }}
+                        </strong>
+                    </div>
+
+                    <div class="preview-item">
+                        <span>Status</span>
+                        <strong>
+                            <span class="status {{ task.status|lower|replace(' ','-') }}">
+                                {{ task.status }}
+                            </span>
+                        </strong>
+                    </div>
+
+                    <div class="preview-item">
+                        <span>Priority</span>
+                        <strong>
+                            <span class="priority {{ task.priority|lower }}">
+                                {{ task.priority }}
+                            </span>
+                        </strong>
+                    </div>
+
+                    <div class="preview-item">
+                        <span>Created By</span>
+                        <strong>{{ task.creator.name }}</strong>
+                    </div>
+
+                    <div class="preview-item">
+                        <span>Last Updated</span>
+                        <strong>
+                            {{ task.updated_at.strftime('%d %b %Y, %I:%M %p')
+                               if task.updated_at else '—' }}
+                        </strong>
+                    </div>
+
+                </div>
+
+                <div class="preview-description">
+                    <div class="preview-section-title">
+                        <i class="bi bi-card-text"></i>
+                        Task Description
+                    </div>
+
+                    <div class="preview-description-box">
+                        {% if task.description %}
+                            {{ task.description }}
+                        {% else %}
+                            <span class="text-muted">
+                                No description provided.
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-light"
+                        data-bs-dismiss="modal">
+                    Close
+                </button>
+
+                <a href="{{ url_for('employee_task_edit',
+                            task_id=task.id,
+                            search=request.args.get('search',''),
+                            status=request.args.get('status',''),
+                            priority=request.args.get('priority',''),
+                            sort=request.args.get('sort','default'),
+                            direction=request.args.get('direction','asc')) }}"
+                   class="btn btn-primary">
+                    <i class="bi bi-pencil-square"></i>
+                    Edit Task
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}

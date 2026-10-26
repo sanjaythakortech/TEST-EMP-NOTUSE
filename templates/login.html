@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Sign In · OfficeFlow{% endblock %}
+{% block public_content %}
+<div class="login-page">
+  <div class="login-brand"><div class="brand-mark large"><i class="bi bi-check2-square"></i></div><div><strong>OfficeFlow</strong><span>Employee Task Management</span></div></div>
+  <div class="login-card">
+    <div class="login-head"><span class="eyebrow">SECURE ACCESS</span><h1>Welcome back</h1><p>Sign in with your email or Employee ID.</p></div>
+    {% with messages = get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div class="alert alert-{{ category }} app-alert"><i class="bi bi-info-circle-fill"></i><span>{{ message }}</span></div>{% endfor %}{% endwith %}
+    <form method="post" class="login-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Login ID</label>
+      <div class="input-icon"><i class="bi bi-person-badge"></i><input class="form-control" type="text" name="identifier" required autofocus autocomplete="username" placeholder="Email or Employee ID"></div>
+      <label>Password</label>
+      <div class="input-icon password-field"><i class="bi bi-lock"></i><input class="form-control" id="loginPassword" type="password" name="password" required autocomplete="current-password" placeholder="Enter your password"><button type="button" class="password-toggle" onclick="togglePassword('loginPassword', this)" aria-label="Show password"><i class="bi bi-eye"></i></button></div>
+      <button class="btn btn-primary login-submit" type="submit"><i class="bi bi-box-arrow-in-right"></i> Sign in</button>
+    </form>
+    <div class="auth-links"><a href="{{ url_for('auth_forgot') }}">Forgot password?</a><a href="{{ url_for('auth_resend') }}">Resend verification email</a></div>
+    {% if setting_on('signup_open') %}<div class="auth-links center"><span>New manager?</span><a href="{{ url_for('auth_register') }}"><strong>Create your account</strong></a></div>{% endif %}
+    <div class="login-note"><i class="bi bi-shield-check"></i><span>Your account is secured with encrypted password storage.</span></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}{% endblock %}

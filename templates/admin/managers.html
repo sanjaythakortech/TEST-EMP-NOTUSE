@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% from 'admin/_macros.html' import badges, decision %}{% block title %}Managers · OfficeFlow{% endblock %}{% block heading %}Managers{% endblock %}{% block content %}
+<div class="section-head"><div><h2>Managers</h2><p>Open a manager to see their team, edit details or change the password.</p></div></div>
+<div class="chip-row">
+{% for key,label in [('all','All'),('pending','Pending approval'),('active','Active'),('unverified','Unverified'),('blocked','Blocked'),('rejected','Rejected')] %}<a class="chip {{ 'active' if status == key }} {{ 'attn' if key == 'pending' and counts.pending }}" href="{{ url_for('platform_managers', status=key) }}">{{ label }} <b>{{ counts[key] }}</b></a>{% endfor %}
+</div>
+<div class="filter-card" style="grid-template-columns:1fr"><div class="filter-search"><i class="bi bi-search"></i><input data-filter="#mgrTable tbody tr[data-row]" placeholder="Type to search by name, email or company..." autocomplete="off"></div></div>
+<div class="table-card"><div class="table-responsive"><table class="table task-table align-middle" id="mgrTable"><thead><tr><th>Manager</th><th>Company</th><th>Team</th><th>Tasks</th><th>Status</th><th class="text-end">Actions</th></tr></thead><tbody>
+{% for m in managers %}<tr data-row>
+<td><div class="table-person"><div class="avatar small">{{ m.name[:1]|upper }}</div><div><a href="{{ url_for('platform_manager_detail', manager_id=m.id) }}" style="text-decoration:none;color:inherit"><strong>{{ m.name }}</strong></a><small>{{ m.email }}</small></div></div></td>
+<td>{{ m.company or '—' }}</td><td>{{ emp_counts.get(m.id, 0) }} <small class="text-muted">employees</small></td><td>{{ task_counts.get(m.id, 0) }}</td><td>{{ badges(m) }}</td>
+<td><div class="row-actions">{% if m.approval != 'approved' %}{{ decision(m, request.full_path) }}{% endif %}<a class="btn btn-sm btn-light" href="{{ url_for('platform_manager_detail', manager_id=m.id) }}"><i class="bi bi-box-arrow-up-right"></i> Open</a></div></td></tr>
+{% else %}<tr><td colspan="6" class="empty">{% if status == 'all' %}No managers have signed up yet.{% else %}No managers in this view.{% endif %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}
